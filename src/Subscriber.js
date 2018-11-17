@@ -12,11 +12,11 @@ const GQL = {
 }
 
 export default class Subscriber {
-  constructor (url, callback, error) {
+  constructor(url, error, callback) {
     this.nextId = 1
     this.subscriptions = {}
-    this.callback = callback
     this.error = error
+    this.callback = callback
 
     this.webSocket = new WebSocket(url, 'graphql-ws') // graphql-subscriptions
     this.webSocket.onopen = this.onOpen.bind(this)
@@ -25,7 +25,7 @@ export default class Subscriber {
     this.webSocket.onerror = this.onError.bind(this)
   }
 
-  subscribe (query, variables, operationName, callback, error) {
+  subscribe(query, variables, operationName, error, callback) {
     const id = this.nextId++
     const message = {
       type: GQL.START,
@@ -43,7 +43,7 @@ export default class Subscriber {
     return id
   }
 
-  unsubscribe (id) {
+  unsubscribe(id) {
     const message = {
       type: GQL.STOP,
       id: id.toString()
@@ -55,7 +55,7 @@ export default class Subscriber {
     subscriber.callback('unsubscribed')
   }
 
-  close () {
+  close() {
     const message = {
       type: GQL.CONNECTION_TERMINATE
     }
@@ -69,7 +69,7 @@ export default class Subscriber {
     this.subscriptions = {}
   }
 
-  onOpen (event) {
+  onOpen(event) {
     const message = {
       type: GQL.CONNECTION_INIT
     }
@@ -77,7 +77,7 @@ export default class Subscriber {
     this.webSocket.send(JSON.stringify(message))
   }
 
-  onMessage (event) {
+  onMessage(event) {
     const data = JSON.parse(event.data)
 
     switch (data.type) {
@@ -111,11 +111,11 @@ export default class Subscriber {
     }
   }
 
-  onClose (event) {
+  onClose(event) {
     console.log('onClose', event)
   }
 
-  onError (event) {
+  onError(event) {
     console.log('onError', event)
   }
 }
