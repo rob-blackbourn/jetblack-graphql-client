@@ -1,10 +1,19 @@
 {
-  "name": "jetblack-graphql-client",
+  "name": "@jetblack/graphql-client",
+  "private": false,,
   "version": "1.0.0",
+  "description": "Simple non-caching GraphQL client.",
+  "keywords": [
+    "graphql",
+    "client",
+    "subscribe",
+    "websocket"
+  ],
   "main": "lib/index.js",
   "repository": "git@github.com:rob-blackbourn/jetblack-graphql-client.git",
-  "author": "Rob Blackbourn <rblackbourn@ugsb-rbla01.bhdgsystematic.com>",
-  "license": "MIT",
+  "homepage": "https://github.com/rob-blackbourn/jetblack-graphql-client",
+  "author": "Rob Blackbourn <rob.blackbourn@gmail.com>",
+  "license": "Apache 2.0",
   "scripts": {
     "build": "neutrino build",
     "lint": "neutrino lint"
