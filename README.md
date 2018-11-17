@@ -31,10 +31,10 @@ subscribe {
 variables = {}
 operationName = null
 
-const connection = new Subscriber(
+const subscriber = new Subscriber(
     url,
     serverSpecificOptions,
-    (error, subscriber) => {
+    (error, subscribe) => {
         if (error) {
             console.error(error)
             throw error
@@ -56,5 +56,5 @@ const connection = new Subscriber(
     })
 
 // Some time later ...
-connection.shutdown()
+subscriber.shutdown()
 ```
