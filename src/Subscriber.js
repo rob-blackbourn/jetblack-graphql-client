@@ -12,69 +12,71 @@ const GQL = {
 }
 
 export default class Subscriber {
-  constructor(url, error, callback) {
-    this.nextId = 1
-    this.subscriptions = {}
-    this.error = error
+  constructor(url, options, callback) {
+    this.options = options
     this.callback = callback
 
+    this.nextId = 1
+    this.subscriptions = new Map()
     this.webSocket = new WebSocket(url, 'graphql-ws') // graphql-subscriptions
-    this.webSocket.onopen = this.onOpen.bind(this)
+
+    this.webSocket.onopen = event => {
+      // Initiate the connection
+      const message = {
+        type: GQL.CONNECTION_INIT,
+        payload: this.options
+      }
+
+      this.webSocket.send(JSON.stringify(message))
+    }
+
+    this.webSocket.onclose = event => {
+      this.notifyAndClear(new Error(event), undefined)
+    }
+
+    this.webSocket.onerror = event => {
+      this.notifyAndClear(new Error(event), undefined)
+    }
+
     this.webSocket.onmessage = this.onMessage.bind(this)
-    this.webSocket.onclose = this.onClose.bind(this)
-    this.webSocket.onerror = this.onError.bind(this)
   }
 
-  subscribe(query, variables, operationName, error, callback) {
-    const id = this.nextId++
+  subscribe(query, variables, operationName, callback) {
+    const id = (this.nextId++).toString()
+
     const message = {
       type: GQL.START,
-      id: id.toString(),
+      id,
       payload: { query, variables, operationName }
     }
 
-    this.subscriptions[id] = {
-      callback,
-      error
-    }
+    this.subscriptions.set(id, callback)
 
     this.webSocket.send(JSON.stringify(message))
 
-    return id
-  }
+    // Return the unsubscriber.
+    return () => {
+      this.subscriptions.delete(id)
 
-  unsubscribe(id) {
-    const message = {
-      type: GQL.STOP,
-      id: id.toString()
+      const message = {
+        type: GQL.STOP,
+        id
+      }
+
+      this.webSocket.send(JSON.stringify(message))
     }
-
-    this.webSocket.send(JSON.stringify(message))
-
-    const subscriber = this.subscriptions[id]
-    subscriber.callback('unsubscribed')
   }
 
-  close() {
+  shutdown() {
     const message = {
       type: GQL.CONNECTION_TERMINATE
     }
-
     this.webSocket.send(JSON.stringify(message))
-
-    for (const subscriber of this.subscriptions) {
-      subscriber.callback('closed')
-    }
-
-    this.subscriptions = {}
+    this.webSocket.close()
   }
 
-  onOpen(event) {
-    const message = {
-      type: GQL.CONNECTION_INIT
-    }
-
-    this.webSocket.send(JSON.stringify(message))
+  onKeepAlive() {
+    // Stub for inheriting classes to override.
   }
 
   onMessage(event) {
@@ -82,40 +84,56 @@ export default class Subscriber {
 
     switch (data.type) {
       case GQL.CONNECTION_ACK: {
-        this.callback(GQL.CONNECTION_ACK, data)
+        // This is the successful response to GQL.CONNECTION_INIT
+        if (this.callback) {
+          this.callback(undefined, this)
+        }
         break
       }
       case GQL.CONNECTION_ERROR: {
-        this.error(GQL.CONNECTION_ERROR, data)
+        // This may occur:
+        // 1. In response to GQL.CONNECTION_INIT
+        // 2. In case of parsing errors in the client which will not disconnect.
+        if (this.callback) {
+          this.callback(new Error(data.payload), this)
+        }
         break
       }
       case GQL.CONNECTION_KEEP_ALIVE: {
-        this.callback(GQL.CONNECTION_ACK, data)
+        // THis will occur:
+        // 1. After GQL.CONNECTION_ACK
+        // 2. Periodically to keep the connection alive.
+        this.onKeepAlive()
         break
       }
       case GQL.DATA: {
-        const subscriber = this.subscriptions[data.id]
-        if (data.payload.errors) {
-          subscriber.error(GQL.DATA, data.payload.errors)
-        } else {
-          subscriber.callback(GQL.DATA, data.payload.data)
+        // This message is sent after GQL.START to transfer the result of the GraphQL subscription.
+        const callback = this.subscriptions.get(data.id)
+        if (callback) {
+          callback(
+            data.payload.errors ? new Error(data.payload.errors) : undefined,
+            data.payload.data
+          )
         }
         break
       }
       case GQL.COMPLETE: {
-        const subscriber = this.subscriptions[data.id]
-        subscriber.callback('complete')
-        delete this.subscriptions[data.id]
+        // This is sent when the operation is done and no more dta will be sent.
+        const callback = this.subscriptions.get(data.id)
+        if (callback) {
+          this.subscriptions.delete(data.id)
+          callback(new Error('complete'), undefined)
+        }
         break
       }
     }
   }
 
-  onClose(event) {
-    console.log('onClose', event)
-  }
-
-  onError(event) {
-    console.log('onError', event)
+  notifyAndClear(error, response) {
+    const callbacks = this.subscriptions.values()
+    this.subscriptions.clear()
+    for (const callback of callbacks) {
+      callback(error, response)
+    }
   }
 }
