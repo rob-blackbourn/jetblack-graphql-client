@@ -1,3 +1,5 @@
+import GraphQLError from './GraphQLError'
+
 const GQL = {
   CONNECTION_INIT: 'connection_init',
   CONNECTION_ACK: 'connection_ack',
@@ -12,7 +14,7 @@ const GQL = {
 }
 
 export default class Subscriber {
-  constructor(url, options, callback) {
+  constructor (url, options, callback) {
     this.options = options
     this.callback = callback
 
@@ -31,17 +33,17 @@ export default class Subscriber {
     }
 
     this.webSocket.onclose = event => {
-      this.notifyAndClear(new Error(event), undefined)
+      this.notifyAndClear(new GraphQLError(event), undefined)
     }
 
     this.webSocket.onerror = event => {
-      this.notifyAndClear(new Error(event), undefined)
+      this.notifyAndClear(new GraphQLError(event), undefined)
     }
 
     this.webSocket.onmessage = this.onMessage.bind(this)
   }
 
-  subscribe(query, variables, operationName, callback) {
+  subscribe (query, variables, operationName, callback) {
     const id = (this.nextId++).toString()
 
     const message = {
@@ -67,7 +69,7 @@ export default class Subscriber {
     }
   }
 
-  shutdown() {
+  shutdown () {
     const message = {
       type: GQL.CONNECTION_TERMINATE
     }
@@ -75,18 +77,18 @@ export default class Subscriber {
     this.webSocket.close()
   }
 
-  onKeepAlive() {
+  onKeepAlive () {
     // Stub for inheriting classes to override.
   }
 
-  onMessage(event) {
+  onMessage (event) {
     const data = JSON.parse(event.data)
 
     switch (data.type) {
       case GQL.CONNECTION_ACK: {
         // This is the successful response to GQL.CONNECTION_INIT
         if (this.callback) {
-          this.callback(undefined, this)
+          this.callback(undefined, this.subscribe.bind(this))
         }
         break
       }
@@ -95,7 +97,7 @@ export default class Subscriber {
         // 1. In response to GQL.CONNECTION_INIT
         // 2. In case of parsing errors in the client which will not disconnect.
         if (this.callback) {
-          this.callback(new Error(data.payload), this)
+          this.callback(new GraphQLError(data.payload), this)
         }
         break
       }
@@ -110,10 +112,8 @@ export default class Subscriber {
         // This message is sent after GQL.START to transfer the result of the GraphQL subscription.
         const callback = this.subscriptions.get(data.id)
         if (callback) {
-          callback(
-            data.payload.errors ? new Error(data.payload.errors) : undefined,
-            data.payload.data
-          )
+          const error = data.payload.errors ? new GraphQLError(data.payload.errors) : undefined
+          callback(error, data.payload.data)
         }
         break
       }
@@ -122,14 +122,14 @@ export default class Subscriber {
         const callback = this.subscriptions.get(data.id)
         if (callback) {
           this.subscriptions.delete(data.id)
-          callback(new Error('complete'), undefined)
+          callback(new GraphQLError('complete'), undefined)
         }
         break
       }
     }
   }
 
-  notifyAndClear(error, response) {
+  notifyAndClear (error, response) {
     const callbacks = this.subscriptions.values()
     this.subscriptions.clear()
     for (const callback of callbacks) {

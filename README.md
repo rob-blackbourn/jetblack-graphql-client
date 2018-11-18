@@ -22,7 +22,7 @@ const url = 'ws://localhost/subscriptions'
 const serverSpecificOptions = {}
 
 const query = `
-subscribe {
+subscription {
     mySubscription {
         someData
     }
