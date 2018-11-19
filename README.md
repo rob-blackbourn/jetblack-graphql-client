@@ -51,7 +51,7 @@ There follows an example of the `Subscriber`.
 import { Subscriber } from '@jetblack/subscriber'
 
 const url = 'ws://localhost/subscriptions'
-const serverSpecificOptions = {}
+const options = {}
 
 const query = `
 subscription {
@@ -65,7 +65,7 @@ operationName = null
 
 const subscriber = new Subscriber(
     url,
-    serverSpecificOptions,
+    options,
     (error, subscribe) => {
         if (error) {
             console.error(error)
