@@ -15,6 +15,14 @@ This implementation is deliberately explicit and low on features as I wanted to 
 the algorithm clear. Features like observables and caching should be implmented in
 other libraries.
 
+## Installation
+
+I have not yet published this package. you can install it directly from here.
+
+```bash
+yarn add https://github.com/rob-blackbourn/jetblack-graphql-client
+```
+
 ## Usage
 
 There are two main classes:
