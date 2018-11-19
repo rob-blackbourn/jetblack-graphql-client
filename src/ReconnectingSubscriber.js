@@ -1,11 +1,11 @@
 import Subscriber from './Subscriber'
 
 export default class ReconnectingSubscriber {
-  constructor (url, options, callback, timeout = 1000, maxRetries = 0) {
+  constructor (url, options, callback, delay = 1000, maxRetries = 0) {
     this.url = url
     this.options = options
     this.callback = callback
-    this.timeout = timeout
+    this.timeodelayut = delay
     this.maxRetries = maxRetries
     this.retryCount = 0
     this.subscriber = new Subscriber(
@@ -33,7 +33,7 @@ export default class ReconnectingSubscriber {
   reschedule (query, variables, operationName, callback, unsubscribeProxy) {
     setTimeout(() => {
       this.resubscribe(query, variables, operationName, callback, unsubscribeProxy)
-    }, this.timeout)
+    }, this.delay)
   }
 
   resubscribe (query, variables, operationName, callback, unsubscribeProxy) {
