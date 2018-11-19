@@ -112,7 +112,7 @@ mutate CreditAccount($account: ID!, $amount: Float!) {
         ''
     )
     .then(response => {
-        console.log(response.status.balance)
+        console.log(response.data.balance)
     })
     .catch(error => {
         console.error(error)
