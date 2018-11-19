@@ -33,11 +33,9 @@ export default class Subscriber {
     }
 
     this.webSocket.onclose = event => {
-      this.notifyAndClear(new GraphQLError(event), undefined)
-    }
-
-    this.webSocket.onerror = event => {
-      this.notifyAndClear(new GraphQLError(event), undefined)
+      const error = new GraphQLError(event)
+      this.callback(error)
+      this.notifyAndClear(error, undefined)
     }
 
     this.webSocket.onmessage = this.onMessage.bind(this)
@@ -130,7 +128,7 @@ export default class Subscriber {
   }
 
   notifyAndClear (error, response) {
-    const callbacks = this.subscriptions.values()
+    const callbacks = Array.from(this.subscriptions.values())
     this.subscriptions.clear()
     for (const callback of callbacks) {
       callback(error, response)
