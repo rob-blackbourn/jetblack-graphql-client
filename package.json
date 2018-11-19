@@ -1,6 +1,6 @@
 {
   "name": "@jetblack/graphql-client",
-  "private": false,,
+  "private": false,
   "version": "1.0.0",
   "description": "Simple non-caching GraphQL client.",
   "keywords": [
