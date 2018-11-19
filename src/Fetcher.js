@@ -1,5 +1,5 @@
 export default class Fetcher {
-  constructor (url, headers = {}, method = null) {
+  constructor (url, headers = {}, method = 'post') {
     this.url = url
     this.headers = headers
     this.method = method
@@ -7,7 +7,7 @@ export default class Fetcher {
 
   fetch (query, variables = {}, operationName = null, headers = {}, method = null) {
     return fetch(this.url, {
-      method: method || this.method || 'post',
+      method: method || this.method,
       headers: {
         ...this.headers,
         ...headers,
