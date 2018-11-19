@@ -100,14 +100,14 @@ const fetcher = new RetryFetcher('http://localhost/graphql')
 fetcher
     .fetch(
         `
-mutate CreditAccouunt($account: ID!, $amount: Float!) {
+mutate CreditAccount($account: ID!, $amount: Float!) {
     creditAccount(account: $account, amount: $amount) {
         balance
     }
 }`,
         {
             account: '1234',
-            ammount: 19.99
+            amount: 19.99
         },
         ''
     )
