@@ -56,7 +56,7 @@ There are two helper classes which provide reconnection/retry functionality:
 There follows an example of the `Subscriber`.
 
 ```js
-import { Subscriber } from 'jetblack-graphql-client'
+import { Subscriber } from '@jetblack/graphql-client'
 
 const url = 'ws://localhost/subscriptions'
 const options = {}
@@ -102,7 +102,7 @@ subscriber.shutdown()
 The fetch function is used as follows.
 
 ```js
-import { Fetcher } from 'jetblack-graphql-client'
+import { Fetcher } from '@jetblack/graphql-client'
 
 const fetcher = new RetryFetcher('http://localhost/graphql')
 
