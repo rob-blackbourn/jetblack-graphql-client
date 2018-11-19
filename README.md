@@ -17,10 +17,10 @@ other libraries.
 
 ## Installation
 
-I have not yet published this package. you can install it directly from here.
+Install from npm.
 
 ```bash
-yarn add https://github.com/rob-blackbourn/jetblack-graphql-client
+yarn add @jetblack/graphql-client
 ```
 
 ## Usage
