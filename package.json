@@ -7,6 +7,7 @@
     "graphql",
     "client",
     "subscribe",
+    "subscription",
     "websocket"
   ],
   "main": "lib/index.js",
