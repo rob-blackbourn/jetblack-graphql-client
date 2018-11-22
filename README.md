@@ -80,6 +80,10 @@ const shutdown = graphQLSubscriber(
     url,
     options,
     (error, subscribe) => {
+        if (!(error || subscribe)) {
+            // Normal closure.
+            return
+        }
         if (error) {
             console.error(error)
             throw error
@@ -89,6 +93,10 @@ const shutdown = graphQLSubscriber(
             variables,
             operationName,
             (error, data) => {
+                if (!(error || subscribe)) {
+                    // Normal closure
+                    return
+                }
                 if (error) {
                     console.error(error)
                     throw error
