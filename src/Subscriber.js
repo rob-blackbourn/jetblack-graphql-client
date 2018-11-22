@@ -1,4 +1,5 @@
 import GraphQLError from './GraphQLError'
+import EventError from './EventError'
 
 const GQL = {
   CONNECTION_INIT: 'connection_init',
@@ -13,31 +14,33 @@ const GQL = {
   COMPLETE: 'complete'
 }
 
-export default class Subscriber {
-  constructor (url, options, callback) {
+class Subscriber {
+  constructor (url, options, callback, protocols = 'graphql-ws') {
+    this.options = options
     this.callback = callback
 
     this.nextId = 1
     this.subscriptions = new Map()
-    this.webSocket = new WebSocket(url, 'graphql-ws')
+    this.webSocket = new WebSocket(url, protocols)
 
     this.webSocket.onopen = event => {
       // Initiate the connection
       this.webSocket.send(JSON.stringify({
         type: GQL.CONNECTION_INIT,
-        payload: options
+        payload: this.options
       }))
     }
 
     this.webSocket.onclose = event => {
-      const error = new GraphQLError(event)
+      // The code 1000 (Normal Closure) is special, and results in no error or payload.
+      const error = event.code === 1000 ? null : new EventError(event)
       // Notify the subscriber.
       this.callback(error)
       // Notify the subscriptions.
       const callbacks = Array.from(this.subscriptions.values())
       this.subscriptions.clear()
       for (const callback of callbacks) {
-        callback(error, undefined)
+        callback(error, null)
       }
     }
 
@@ -48,7 +51,6 @@ export default class Subscriber {
     const id = (this.nextId++).toString()
     this.subscriptions.set(id, callback)
 
-    // Start the subscription.
     this.webSocket.send(JSON.stringify({
       type: GQL.START,
       id,
@@ -59,7 +61,6 @@ export default class Subscriber {
     return () => {
       this.subscriptions.delete(id)
 
-      // Stop the subscription.
       this.webSocket.send(JSON.stringify({
         type: GQL.STOP,
         id
@@ -85,7 +86,7 @@ export default class Subscriber {
       case GQL.CONNECTION_ACK: {
         // This is the successful response to GQL.CONNECTION_INIT
         if (this.callback) {
-          this.callback(undefined, this.subscribe.bind(this))
+          this.callback(null, this.subscribe.bind(this))
         }
         break
       }
@@ -93,37 +94,41 @@ export default class Subscriber {
         // This may occur:
         // 1. In response to GQL.CONNECTION_INIT
         // 2. In case of parsing errors in the client which will not disconnect.
-        // The payload contains the error.
         if (this.callback) {
           this.callback(new GraphQLError(data.payload), this)
         }
         break
       }
       case GQL.CONNECTION_KEEP_ALIVE: {
-        // This will occur:
+        // THis will occur:
         // 1. After GQL.CONNECTION_ACK
         // 2. Periodically to keep the connection alive.
         this.onKeepAlive()
         break
       }
       case GQL.DATA: {
-        // These messages are sent after GQL.START to transfer the results of the GraphQL subscription.
+        // This message is sent after GQL.START to transfer the result of the GraphQL subscription.
         const callback = this.subscriptions.get(data.id)
         if (callback) {
-          const error = data.payload.errors ? new GraphQLError(data.payload.errors) : undefined
+          const error = data.payload.errors ? new GraphQLError(data.payload.errors) : null
           callback(error, data.payload.data)
         }
         break
       }
       case GQL.COMPLETE: {
-        // This is sent when an operation is done and no more data will be sent.
+        // This is sent when the operation is done and no more dta will be sent.
         const callback = this.subscriptions.get(data.id)
         if (callback) {
           this.subscriptions.delete(data.id)
-          callback(new GraphQLError('complete'), undefined)
+          callback(new GraphQLError('complete'), null)
         }
         break
       }
     }
   }
+}
+
+export default function graphQLSubscriber (url, options, callback, protocols = 'graphql-ws') {
+  const subscriber = new Subscriber(url, options, callback, protocols)
+  return subscriber.shutdown.bind(subscriber)
 }
