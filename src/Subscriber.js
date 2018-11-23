@@ -95,7 +95,7 @@ class Subscriber {
         break
       }
       case GQL.CONNECTION_KEEP_ALIVE: {
-        // THis will occur:
+        // This may occur:
         // 1. After GQL.CONNECTION_ACK
         // 2. Periodically to keep the connection alive.
         break
