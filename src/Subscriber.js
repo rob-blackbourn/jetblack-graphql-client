@@ -96,7 +96,7 @@ class Subscriber {
       }
       case GQL.CONNECTION_KEEP_ALIVE: {
         // This may occur:
-        // 1. After GQL.CONNECTION_ACK
+        // 1. After GQL.CONNECTION_ACK,
         // 2. Periodically to keep the connection alive.
         break
       }
@@ -114,7 +114,8 @@ class Subscriber {
         const callback = this.subscriptions.get(data.id)
         if (callback) {
           this.subscriptions.delete(data.id)
-          callback(new GraphQLError('complete'), null)
+          // Return a null error and payload to indicate the subscription is closed.
+          callback(null, null)
         }
         break
       }
