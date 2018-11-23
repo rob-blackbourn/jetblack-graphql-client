@@ -109,6 +109,15 @@ class Subscriber {
         }
         break
       }
+      case GQL.ERROR: {
+        // This method is sent when a subscription fails. This is usually dues to validation errors
+        // as resolver errors are returned in GQL.DATA messages.
+        const callback = this.subscriptions.get(data.id)
+        if (callback) {
+          callback(new GraphQLError(data.payload.errors), data.payload.data)
+        }
+        break
+      }
       case GQL.COMPLETE: {
         // This is sent when the operation is done and no more dta will be sent.
         const callback = this.subscriptions.get(data.id)
