@@ -16,7 +16,6 @@ const GQL = {
 
 class Subscriber {
   constructor (url, options, callback, protocols = 'graphql-ws') {
-    this.options = options
     this.callback = callback
 
     this.nextId = 1
@@ -27,7 +26,7 @@ class Subscriber {
       // Initiate the connection
       this.webSocket.send(JSON.stringify({
         type: GQL.CONNECTION_INIT,
-        payload: this.options
+        payload: options
       }))
     }
 
