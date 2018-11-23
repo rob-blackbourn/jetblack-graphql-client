@@ -29,7 +29,7 @@ yarn add @jetblack/graphql-client
 There are two functions:
 
  * `graphQLSubscriber (url, options, callback, protocols = 'graphql-ws')`
- * `graphQLFetch (url, query, variables = {}, operationName = null, headers = {}, method = 'post')`
+ * `graphQLFetch (url, query, variables = {}, operationName = null, init = fetchOptions)`
 
 The `graphQLSubscriber` implements the `WebSocket` protocol. The function takes the
 `url` for the `WebSocket`, an `options` object which is simply passed as JSON to the
@@ -42,10 +42,26 @@ When `subscribe` is called it returns a function that can be called to unsubscri
 The `callback` to the `subscribe` function has the prototype `callback(error, data)`. If
 both `error` and `data` are `null` then connection hs been closed normally.
 
+The `protocols` defaults to `"graphql-ws"`. The documentation suggests this can be an array or strings, but the first should be the default.
+
 The `graphQLFetch` function is a simple `fetch` implementation for `query` and `mutation` operations.
 There are numerous implementations of this available, and it is provided for convenience.
-The `method` defaults to `'post'`, but `'get'` is also valid.
-The `protocols` defaults to `"graphql-ws"`. The documentation suggests this can be an array or strings, but the first should be the default.
+The `init` parameter is passed through to fetch. It has the default value `fetchOptions` which is defined as:
+
+```js
+const fetchOptions = {
+  method: 'post',
+  headers: { 'Content-Type': 'application/json' }
+}
+
+// The fetchOptions can be extended.
+const myFetchOptions = {
+    ...fetchOptions,
+    mode: 'cors'
+}
+```
+
+
 
 There follows an example of the `graphQLSubscriber`.
 
@@ -112,15 +128,14 @@ const fetcher = new RetryFetcher('http://localhost/graphql')
 graphQLFetch(
     `
 mutate CreditAccount($account: ID!, $amount: Float!) {
-creditAccount(account: $account, amount: $amount) {
-    balance
-}
+    creditAccount(account: $account, amount: $amount) {
+        balance
+    }
 }`,
     {
         account: '1234',
         amount: 19.99
-    },
-    ''
+    }
 )
 .then(respoonse => response.json())
 .then(response => {

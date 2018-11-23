@@ -1,9 +1,13 @@
-export default function graphQLFetch (url, query, variables = {}, operationName = null, headers = {}, method = 'post') {
+export const fetchOptions = {
+  method: 'post',
+  headers: { 'Content-Type': 'application/json' }
+}
+
+export default function graphQLFetch (url, query, variables = {}, operationName = null, init = fetchOptions) {
   return fetch(
     url,
     {
-      method,
-      headers: { ...headers, 'Content-Type': 'application/json' },
+      ...init,
       body: JSON.stringify({
         query,
         variables,
