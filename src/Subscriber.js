@@ -74,10 +74,6 @@ class Subscriber {
     this.webSocket.close()
   }
 
-  onKeepAlive () {
-    // Stub for inheriting classes to override.
-  }
-
   onMessage (event) {
     const data = JSON.parse(event.data)
 
@@ -102,7 +98,6 @@ class Subscriber {
         // THis will occur:
         // 1. After GQL.CONNECTION_ACK
         // 2. Periodically to keep the connection alive.
-        this.onKeepAlive()
         break
       }
       case GQL.DATA: {
