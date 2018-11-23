@@ -1,7 +1,7 @@
 {
   "name": "@jetblack/graphql-client",
   "private": false,
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Simple non-caching GraphQL client.",
   "keywords": [
     "graphql",
@@ -14,7 +14,7 @@
   "repository": "git@github.com:rob-blackbourn/jetblack-graphql-client.git",
   "homepage": "https://github.com/rob-blackbourn/jetblack-graphql-client",
   "author": "Rob Blackbourn <rob.blackbourn@gmail.com>",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "neutrino build",
     "lint": "neutrino lint"

@@ -13,7 +13,8 @@ The protocol for GraphQL WebSocket subscriptions can be found [here](https://git
 
 This implementation is deliberately explicit and low on features as I wanted to keep
 the algorithm clear. Features like observables and caching should be implmented in
-other libraries.
+other libraries. For example see [here](https://github.com/rob-blackbourn/jetblack-graphql-reconnect-client)
+for a reconnecting subscriber.
 
 ## Installation
 
@@ -25,7 +26,7 @@ yarn add @jetblack/graphql-client
 
 ## Usage
 
-There are two main functions:
+There are two functions:
 
  * `graphQLSubscriber (url, options, callback, protocols = 'graphql-ws')`
  * `graphQLFetch (url, query, variables = {}, operationName = null, headers = {}, method = 'post')`
@@ -45,18 +46,6 @@ The `graphQLFetch` function is a simple `fetch` implementation for `query` and `
 There are numerous implementations of this available, and it is provided for convenience.
 The `method` defaults to `'post'`, but `'get'` is also valid.
 The `protocols` defaults to `"graphql-ws"`. The documentation suggests this can be an array or strings, but the first should be the default.
-
-There are two helper functions which provide reconnection/retry functionality:
-
- * `graphQLReconnectingSubscriber (url, options, callback, delay = 1000, maxRetries = 0, protocols = 'graphql-ws')`
- * `graphQLRetryFetch (url, query, variables = {}, operationName = null, headers = {}, method = 'post')`
-
- As the name suggests the `graphQLReconnectingSubscriber` will try to reconnect should
- the connection be dropped. The `delay` is specified in milliseconds. The `maxRetries`
- will limit the number of retries unless set to 0 which means unlimited.
-
- The `graphQLRetryFetcher` has an extra `retryOn` argument which is an array of status codes
- for which retry will be attempted.
 
 There follows an example of the `graphQLSubscriber`.
 
