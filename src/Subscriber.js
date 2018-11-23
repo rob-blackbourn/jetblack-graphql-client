@@ -114,7 +114,7 @@ class Subscriber {
         // as resolver errors are returned in GQL.DATA messages.
         const callback = this.subscriptions.get(data.id)
         if (callback) {
-          callback(new GraphQLError(data.payload.errors), data.payload.data)
+          callback(new GraphQLError(data.payload), null)
         }
         break
       }
