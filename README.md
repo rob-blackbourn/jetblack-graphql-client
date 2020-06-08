@@ -63,7 +63,7 @@ const myFetchOptions = {
 
 
 
-There follows an example of the `graphQLSubscriber`.
+Following is an example of the `graphQLSubscriber`.
 
 ```js
 import { Subscriber } from '@jetblack/graphql-client'
@@ -81,7 +81,7 @@ subscription {
 variables = {}
 operationName = null
 
-const shutdown = graphQLSubscriber(
+const shutdown = Subscriber.graphQLSubscriber(
     url,
     options,
     (error, subscribe) => {
